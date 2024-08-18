@@ -1,0 +1,417 @@
+reduxとは状態管理。
+  状態によって操作したりする.
+    ログインしてたら自分のページを見せる。
+  状態を監視する
+    客が悩んでいる→決まった。店員のやることは待つ→聞きにいく
+  状態を一つの場所で管理する
+    コンポーネントのバケツリレーがいらなくなる。
+
+Reduxの裏側の仕組みはどうなってる？
+
+  State:状態→0＄　　グローバルに使える
+  ↓
+  UI：ボタンとか→「10$預金するボタン」
+    ここからactionが始まる
+  ↓
+  event handler
+  dispatch:通知する（actionをstoreに通知する
+  ↓
+  Store：倉庫　　グローバルに使える
+    stateの0＄の状態をreducerに
+    reducer:変える→actionと前のstateを受け取って新しいstateに返して更新する（10＄にする）
+
+ReactとReduxの関係性
+  react:コンポーネントを動かしているメイン
+  State:状態
+  Redux：状態を呼んだり返したりするサポート
+
+簡単にReduxアプリケーションを構築してみよう
+  reactプロジェクトを開始
+    npx create-react-app my-app
+      cd my-app
+      npm start
+  redux追加する
+    npm install react-redux
+    npm install redux
+生のReduxで必要なものを書き出してみよう
+  // actions-> increment,decrement
+  //reducer
+  //store
+Store・Action・Reducerを実際にコーディングして用意しよう
+  //Action
+    const increment = () => {
+      return {
+        // action name
+        type: "INCREMENT",
+      };
+    };
+  //Reducer
+    //引数stateの初期化とactionのreturnが入ってくる
+      const couterReducer = (state = 0, action) => {
+        switch (action.type) {
+          case "DECREMENT":
+            return state + 1;
+          case "INCREMENT":
+            return state + 1;
+        }
+      };
+  //Store
+    //storeの引数にreducer,createStore関数はimportしてくる
+      let store = createStore(couterReducer);
+Dispatchで通知して新しい状態になったらログに出力してみよう
+  // コンソールに新しい状態を出力
+  store.subscribe(() => console.log(store.getState()));
+  //dispatch なかでactionを呼ぶ。
+  store.dispatch(increment());
+
+コードのリファクタリングとReducerを作ろう
+  src>action
+  ↓→>reducers/counter.js
+  index.js
+  isLoggin.js
+
+  さっきindex.jsに書いたやつを移植する。
+  switch文のdefault はreturn stateにする
+
+複数のReducerを組み合わせる操作を始めよう
+
+  topのindex.js
+  //store 引数はひとつだけ。だからまとめておく必要がある
+    let store = createStore(allReducers);
+  
+  src>reducers/index.js
+    // まとめておく。
+  const allReducers = combineReducers({
+    couter: couterReducer,
+    isLogin: isLoginReducer,
+  });
+
+Redux dev Toolsプラグインをインストールしよう
+  拡張機能インストールしてstoreの第二引数に追加（ただもうサポート終了間近）
+    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+
+ProviderでグローバルにStoreを利用してみよう
+  挟んで、これをつかう。→let store = createStore
+  import {Provider} from "react-redux"
+    <Provider store={store}>
+      <App />
+    </Provider>
+
+useSelectorのHooksを使って状態にアクセスしよう
+
+  app.jsでフックスをつかう。reducersフォルダで作ったstateを引数としてつかう。
+    const couter = useSelector((state) => state.couter);
+
+Actionを作成してuseDispatchでStoreへ通知を出してみよう
+  ここでもフックスをつかう。
+  const dispatch = useDispatch();
+  <button onClick={() => dispatch()}>+</button>
+
+  作成したactionsをdispatchの引数についかする
+    import { increment, decrement } from "./actions";
+    <button onClick={() => dispatch(increment())}>+</button>
+
+  やってることはaction→reducers
+  typenameを合致するのをみつけてstate変更を実行
+
+payloadを追加して7ずつカウントアップさせよう
+  payloadは引数とかデータって意味？
+    actionで設定、reducerで処理追加、UIでactionsの引数に追加
+    my-app/src/actions/index.js
+      export const increment = (number) => {
+        return {
+          // action name
+          type: "INCREMENT",
+          payload: number,
+        };
+      };
+
+    my-app/src/reducers/counter.js
+        const couterReducer = (state = 0, action) => {
+        switch (action.type) {
+          case "INCREMENT":
+            return state + action.payload;
+
+    App.js
+    <button onClick={() => dispatch(increment(7))}>+</button>
+
+
+Redux Toolkitでショッピングカートアプリを作ってみよう：その１
+  ショッピングカートプロジェクト用に雛形を作成しよう
+    npm install @reduxjs/toolkit
+    npm install react-redux
+
+Redux ToolkitでStoreを作成してみよう
+  src>store.js
+    import { configureStore } from "@reduxjs/toolkit";
+    export const store = configureStore({
+      reducer: {},
+    });
+
+Sliceを理解して実装してみよう
+  入れ子構造になってる。今までわけていたのをまとめることができる
+  store > slice > state,reducer > action creater
+  row-redux-app/src/features/cart/CartSlice.js
+    import { createSlice } from "@reduxjs/toolkit";
+
+    const initialState = {
+      cartItems: [],
+      amount: 0,
+      total: 0,
+    };
+    const cartSlice = createSlice({
+      name: "cart",
+      initialState,
+      reducers: {},
+    });
+
+reducerをstoreに渡して中身を確認してみよう
+  store.js
+  import cartReducer from "./features/cart/CartSlice";
+  export const store = configureStore({
+    reducer: {
+      cart: cartReducer,
+    },
+  });
+
+エラー
+  ERROR in ./src/store.js 4:0-43
+  Module not found: Error: Can't resolve './features/cart/' in '/Users/keijifudinaga/work/react/redux_shincodecamp/redux-toolkit-app/src'
+  原因　パスの名前が間違ってた
+  解決方法　chatGPT
+  import cartReducer from"./features/cart/CartSlice"; 
+  // 正しいパスに修正./features/cart→./features/cart/CartSlice"; 
+
+ナビゲーションバーを作成してみよう
+  src/components/Navbar.js
+  src/App.css
+
+useSelectorでstoreにアクセスして表示してみよう
+  store→reducer→cartsliceのinitialState.amountの値
+  const { amount } = useSelector((store) => store.cart);
+
+  
+HeroIconsを利用してカートアイコンを表示しよう
+  redux-toolkit-app/src/HeoroIcons.js
+
+  https://heroicons.com/
+  export const CartIcon = () => {
+    return (
+      この中にSVG入れる
+
+商品情報をローカルで定義しておこう
+オブジェクト形式の商品情報(cartItems.js)をつくって、initialstateに追加。
+src/cartItems.js
+src/features/cart/CartSlice.js
+  import cartItems from "../../cartItems";
+  // 買い物かごの初期化
+  const initialState = {
+    cartItems: cartItems,
+
+買い物かごの中身を出力するコンテナを作成しよう：その１
+  src/components/CartContainer.js
+    import { useSelector } from "react-redux";
+    //カゴに何も入ってないときに表示する。
+    const CartContainer = () => {
+      const { amount } = useSelector((state) => state.cart);
+      if (amount > 1) {
+        return (
+買い物かごの中身を出力するコンテナを作成しよう：その２
+  src/components/CartContainer.js
+    /src/components/CartItem.js
+    mapでcartItem表示。
+    合計,全削除ボタン追加
+
+Storeの中身から商品情報を取り出して出力してみよう
+  //スプレッド構文でpropsを渡している。
+  components/CartContainer.js
+    {cartItems.map((item) => {
+      return <CartItem key={item.id} {...item} />;
+    })}
+  //それを受け取ってる
+  components/CartItem.jsx
+    const CartItem = ({ id, img, title, price, amount }) => {
+      return (
+
+全ての商品を削除するActionとReducerを作成しよう
+
+  src/features/cart/CartSlice.js
+    const cartSlice = createSlice({
+      name: "cart",
+      initialState,
+      reducers: {
+        //actionの名前設定、呼ぶ時これ使う。action Createrが作成される。。中身空っぽにしてるよ
+        clearCart: (state) => {
+          //更新の内容
+          state.cartItems = [];
+        },
+      },
+    });
+    export const { clearCart } = cartSlice.actions;
+
+DispatchでStoreに通知して商品を全て削除しよう
+  components/CartContainer.js
+    useDispatchフックスを使ってclearCartをdispatchしてる
+      <button className="btn clear-btn" onClick={() => dispatch(clearCart())}>
+  いまだとcartItemsだけ空になってるから、
+  amountの値も0にするには、reducerのclearCartアクションを全部ゼロにするように書き換える。
+    src/features/cart/CartSlice.js
+      const cartSlice = createSlice({
+      name: "cart",
+      initialState,
+      reducers: {
+        clearCart: (state) => {
+          // state.cartItems = [];
+          return { cartItems: [], amount: 0, total: 0 };
+        },
+      },
+    });
+
+１つの商品を削除するReducerを作成しよう：その１
+  removeItem　Reducer（Action Creater)をつくる。
+  cartSlice.actionsでexportする。
+  あとでdispatchする
+  src/features/cart/CartSlice.js
+    const cartSlice = createSlice({
+      name: "cart",
+      initialState,
+      reducers: {
+        clearCart: (state) => {
+          return { cartItems: [], amount: 0, total: 0 };
+        },
+        removeItem: (state, action) => {
+          console.log(action);
+        },
+      },
+    });
+    export const { clearCart, removeItem } = cartSlice.actions;
+
+
+  cartSliceのactionはid,payloadを含む
+    src/components/CartItem.jsx
+      <button className="remove-btn" onClick={() => dispatch(removeItem(id))}>
+
+１つの商品を削除するReducerを作成しよう：その２
+
+？src/features/cart/CartSlice.jsのreducers、removeItemの引数stateの中身がどうなってるかよくわからん。
+  removeItem: (state, action) => {
+      const itemId = action.payload;
+      state.cartItems = state.cartItems.filter((item) => item.id !== itemId);
+    },
+
+購入する商品数を昇降させるReducerを作成しよう
+  increase: (state, action) => {
+      const cartItem = state.cartItems.find(
+        (item) => item.id === action.payload
+      );
+      cartItem.amount = cartItem.amount + 1;
+    },
+  //removeのときマイナスの値になることあるからそれをなくすvalidationを作ったりする。
+    <button
+      className="amount-btn"
+      onClick={() => {
+        if (amount === 1) {
+          dispatch(removeItem(id));
+          return;
+        }
+        dispatch(decrease(id));
+      }}
+    >
+      <MinusIcon />
+    </button>
+
+合計金額・商品数を管理するReducerを作成しよう
+  //4つの商品に対してそれぞれforeachで更新してく
+    calculateTotals: (state) => {
+      let amount = 0;
+      let total = 0;
+      state.cartItems.forEach((item) => {
+        amount += item.amount;
+        total += item.amount * item.price;
+      });
+      state.amount = amount;
+      state.total = total;
+    },
+
+カート状態が変化する度に発火する仕組みを構築しよう
+
+
+  import { useDispatch, useSelector } from "react-redux";
+  import { useEffect } from "react";
+  import { calculateTotals } from "./features/cart/CartSlice";
+
+  function App() {
+    const dispatch = useDispatch();
+    //useSelectorはstore、stateの状態にアクセスできるフックス
+      const {cartItems} = useSelector((state)=>state.cart);
+    //useEffectは発火のタイミングを決めることができるフックス
+    //第二引数の変数の状態が変わったときに第一引数のロジックが発動する
+
+    useEffect(() => {
+      dispatch(calculateTotals());
+    }, [cartItems]);
+  }
+
+
+Redux Toolkitでショッピングカートアプリを作ってみよう：その３
+モーダル専用コンポーネントを作成してみよう
+  src/components/Modal.jsxでマークアップ
+
+ModalSliceを作成しよう
+  sliceつくって、storeで登録
+  redux-toolkit-app/src/features/modal/ModalSlice.js
+    import { createSlice } from "@reduxjs/toolkit";
+
+    const initialState = {
+      isOpen: false,
+    };
+    const modalSlice = createSlice({
+      name: "modal",
+      initialState,
+      reducers: {
+        openModal: (state, action) => {
+          state.isOpen = true;
+        },
+        closeModal: (state, action) => {
+          state.isOpen = false;
+        },
+      },
+    });
+    export const { openModal, closeModal } = modalSlice.actions;
+    export default modalSlice.reducer;
+  
+  redux-toolkit-app/src/store.js
+    import { configureStore } from "@reduxjs/toolkit";
+    import cartReducer from "./features/cart/CartSlice";
+    import modalReducer from "./features/modal/ModalSlice";
+
+    export const store = configureStore({
+      reducer: {
+        cart: cartReducer,
+        modal: modalReducer,
+      },
+    });
+
+全削除を押してモーダルを出現させよう
+
+  App.js
+    const { isOpen } = useSelector((state) => state.modal);
+
+    isOpen && <Modal />
+
+  redux-toolkit-app/src/components/CartContainer.js
+    <button className="btn clear-btn" onClick={() => dispatch(openModal())}>
+      全削除
+    </button>
+
+商品全削除ボタンとキャンセルボタンを実装しよう
+  Modal.jsx 
+    <button
+      className="btn confirm-btn"
+      onClick={() => {
+        dispatch(clearCart());
+        dispatch(closeModal());
+      }}
+    >
+      OK
+    </button>
