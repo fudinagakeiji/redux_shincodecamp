@@ -135,7 +135,7 @@ payloadを追加して7ずつカウントアップさせよう
     App.js
     <button onClick={() => dispatch(increment(7))}>+</button>
 
-
+--------------------------------------------------------------------
 Redux Toolkitでショッピングカートアプリを作ってみよう：その１
   ショッピングカートプロジェクト用に雛形を作成しよう
     npm install @reduxjs/toolkit
@@ -415,3 +415,55 @@ ModalSliceを作成しよう
     >
       OK
     </button>
+
+
+
+
+値は何が必要？
+state
+
+cart
+  cartItem
+    id(pin):1
+    title(pin):"Next.js入門講座"
+    price(pin):"12000"
+    img(pin):"https://uploda1.ysklog.net/uploda/3f3dc982dc.png"
+    amount(pin):1
+  amount
+  total
+modal
+  isOpen
+
+
+  cartの動き
+
+・cartIconの商品の数を表示
+・商品の表示
+・商品の数を全削除
+・商品の削除...
+
+商品の削除　エラー
+これだと、商品ひとつしか削除しない？変なエラーが出てた
+// state.cartItems = cartItems.filter((item) => item.id !== action.payload);
+state.cartItems = state.cartItems.filter(
+  (item) => item.id !== action.payload
+);
+
+商品の数を増やす
+addItem: (state, action) => {
+  // オブジェクト直下の直接代入は大丈夫
+  // state.amount = 0;
+  // // オブジェクト直下の加算代入も大丈夫
+  // state.amount += 1;
+  const item = state.cartItems.find((item) => item.id === action.payload);
+  item.amount += 1;
+},
+
+商品の数を減らす。
+  0になったとき商品を削除する
+
+合計金額・商品数を管理するReducerを作成しよう
+  答え見ちゃった。
+
+modal作成
+べつのsliceを作る。
