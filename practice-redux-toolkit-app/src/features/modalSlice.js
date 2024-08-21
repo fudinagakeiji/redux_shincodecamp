@@ -1,3 +1,4 @@
+// これコピペだから問題なし
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {

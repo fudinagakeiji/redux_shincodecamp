@@ -12,6 +12,7 @@ const CartItem = ({ items }) => {
   const dispatch = useDispatch();
   return (
     <>
+      {/* これを上のコンポーネントでやる <CartItem key={item.id} {...item} />;*/}
       {items.map(({ id, img, title, price, amount }) => {
         return (
           <article class="cart-item" key={id}>

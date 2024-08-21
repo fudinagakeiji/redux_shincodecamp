@@ -11,6 +11,7 @@ const Modal = () => {
     <>
       <aside
         class="modal-container"
+        // styleで出汁分けしないで、コンポーネントまるごとだし訳する。{isOpen && <Modal />}
         style={{ visibility: visible ? "visible" : "hidden" }}
       >
         <div class="modal">
